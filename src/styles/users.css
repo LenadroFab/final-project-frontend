@@ -1,0 +1,197 @@
+/* ======================================================
+☕ KopiKuKopi — Users Management Page
+File : src/styles/users.css
+====================================================== */
+
+.users-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  font-family: "Poppins", sans-serif;
+  color: #3b2f2f;
+}
+
+/* ===== HEADER ===== */
+.users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.8rem;
+}
+
+.users-header h3 {
+  color: #4b2e05;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ===== BUTTONS ===== */
+.btn-coffee {
+  background-color: #8b5e3c;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-coffee:hover {
+  background-color: #70472b;
+  transform: translateY(-2px);
+}
+
+/* ===== TABLE ===== */
+.table-container {
+  background: #fffdfa;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  overflow-x: auto;
+  padding: 1rem;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table thead {
+  background-color: #e1b382;
+  color: #4b2e05;
+}
+
+.users-table th,
+.users-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+.users-table tbody tr:nth-child(even) {
+  background-color: #f9f6f1;
+}
+
+.users-table tbody tr:hover {
+  background-color: #f1e2d0;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.btn-edit,
+.btn-delete {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-edit {
+  background-color: #e1b382;
+  color: #4b2e05;
+}
+
+.btn-edit:hover {
+  background-color: #d49d6a;
+}
+
+.btn-delete {
+  background-color: #f3e1d1;
+  color: #a14a2b;
+}
+
+.btn-delete:hover {
+  background-color: #e7cbb8;
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-content {
+  background: #fffdfa;
+  border-radius: 14px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h4 {
+  color: #4b2e05;
+  margin-bottom: 1.2rem;
+}
+
+.modal-content input {
+  width: 100%;
+  border: 1px solid #d8c8b9;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-back {
+  background-color: #d8c8b9;
+  color: #4b2e05;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-back:hover {
+  background-color: #c4b19f;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .users-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .btn-coffee {
+    width: 100%;
+  }
+
+  .modal-content {
+    width: 90%;
+    padding: 1.5rem;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 0.6rem;
+  }
+}
+
+/* ===== ANIMATION ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
