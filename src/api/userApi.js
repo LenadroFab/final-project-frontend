@@ -1,11 +1,16 @@
+// ======================================================
+// ☕ KopiKuKopi API SERVICE
+// Semua fungsi komunikasi frontend ↔ backend
+// ======================================================
+
 import axios from "axios";
 
 // ======================================================
-// 🔗 KONFIG API URL (ambil dari .env atau fallback localhost)
+// 🔗 KONFIG API URL (ambil dari .env atau fallback)
 // ======================================================
 const API_URL =
   import.meta.env.VITE_API_URL ||
-  "http://localhost:3001"; // fallback untuk lokal development
+  "https://final-project-backend-production-6f07.up.railway.app";
 
 // ======================================================
 // 🔗 KONFIG AXIOS
@@ -17,7 +22,7 @@ const api = axios.create({
   },
 });
 
-// Otomatis tambahkan token Authorization jika ada
+// Tambah token otomatis
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -25,116 +30,49 @@ api.interceptors.request.use((config) => {
 });
 
 // ======================================================
-// 👤 AUTHENTICATION
+// AUTH
 // ======================================================
-export async function register(payload) {
-  return (await api.post("/auth/register", payload)).data;
-}
-
-export async function login(payload) {
-  return (await api.post("/auth/login", payload)).data;
-}
-
-export async function logout() {
-  return (await api.post("/auth/logout")).data;
-}
+export const register = (payload) => api.post("/auth/register", payload).then(r => r.data);
+export const login = (payload) => api.post("/auth/login", payload).then(r => r.data);
+export const logout = () => api.post("/auth/logout").then(r => r.data);
 
 // ======================================================
-// 👥 USERS CRUD
+// USERS CRUD
 // ======================================================
-export async function getUsers() {
-  return (await api.get("/users")).data;
-}
-
-export async function createUser(payload) {
-  return (await api.post("/users", payload)).data;
-}
-
-export async function updateUser(id, payload) {
-  return (await api.put(`/users/${id}`, payload)).data;
-}
-
-export async function deleteUser(id) {
-  return (await api.delete(`/users/${id}`)).data;
-}
+export const getUsers = () => api.get("/users").then(r => r.data);
+export const createUser = (p) => api.post("/users", p).then(r => r.data);
+export const updateUser = (id, p) => api.put(`/users/${id}`, p).then(r => r.data);
+export const deleteUser = (id) => api.delete(`/users/${id}`).then(r => r.data);
 
 // ======================================================
-// 🗂️ CATEGORIES CRUD
+// CATEGORIES CRUD
 // ======================================================
-export async function getCategories(params = {}) {
-  return (await api.get("/categories", { params })).data;
-}
-
-export async function getCategory(id) {
-  return (await api.get(`/categories/${id}`)).data;
-}
-
-export async function createCategory(payload) {
-  return (await api.post("/categories", payload)).data;
-}
-
-export async function updateCategory(id, payload) {
-  return (await api.put(`/categories/${id}`, payload)).data;
-}
-
-export async function deleteCategory(id) {
-  return (await api.delete(`/categories/${id}`)).data;
-}
+export const getCategories = (params={}) => api.get("/categories", { params }).then(r => r.data);
+export const getCategory = (id) => api.get(`/categories/${id}`).then(r => r.data);
+export const createCategory = (p) => api.post("/categories", p).then(r => r.data);
+export const updateCategory = (id, p) => api.put(`/categories/${id}`, p).then(r => r.data);
+export const deleteCategory = (id) => api.delete(`/categories/${id}`).then(r => r.data);
 
 // ======================================================
-// ☕ PRODUCTS CRUD
+// PRODUCTS CRUD
 // ======================================================
-export async function getProducts(params = {}) {
-  return (await api.get("/products", { params })).data;
-}
+export const getProducts = () => api.get("/products").then(r => r.data);
+export const getProduct = (id) => api.get(`/products/${id}`).then(r => r.data);
+export const createProduct = (p) => api.post("/products", p).then(r => r.data);
+export const updateProduct = (id,p) => api.put(`/products/${id}`,p).then(r=>r.data);
+export const deleteProduct = (id) => api.delete(`/products/${id}`).then(r => r.data);
 
-export async function getProduct(id) {
-  return (await api.get(`/products/${id}`)).data;
-}
+// Upload Gambar
+export const createProductWithImage = (f) =>
+  api.post("/products", f, { headers: { "Content-Type": "multipart/form-data" } }).then(r => r.data);
 
-export async function createProduct(payload) {
-  return (await api.post("/products", payload)).data;
-}
-
-export async function updateProduct(id, payload) {
-  return (await api.put(`/products/${id}`, payload)).data;
-}
-
-export async function deleteProduct(id) {
-  return (await api.delete(`/products/${id}`)).data;
-}
+export const updateProductWithImage = (id, f) =>
+  api.put(`/products/${id}`, f, { headers: { "Content-Type": "multipart/form-data" } }).then(r => r.data);
 
 // ======================================================
-// 🖼️ PRODUCTS CRUD (GAMBAR)
+// ORDER & PAYMENT
 // ======================================================
-export async function createProductWithImage(formData) {
-  return (
-    await api.post("/products", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    })
-  ).data;
-}
+export const createOrder = (p) => api.post("/orders", p).then(r => r.data);
+export const createPayment = (p) => api.post("/payments", p).then(r => r.data);
 
-export async function updateProductWithImage(id, formData) {
-  return (
-    await api.put(`/products/${id}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    })
-  ).data;
-}
-
-// ======================================================
-// 🧾 ORDERS & PAYMENTS
-// ======================================================
-export async function createOrder(payload) {
-  return (await api.post("/orders", payload)).data;
-}
-
-export async function createPayment(payload) {
-  return (await api.post("/payments", payload)).data;
-}
-
-// ======================================================
-// EXPORT DEFAULT
-// ======================================================
 export default api;
