@@ -1,23 +1,23 @@
-// src/pages/Products.jsx
-import React, { useEffect, useState } from "react";
+// ===============================================
+// ☕ KopiKuKopi — Orders Page
+// ===============================================
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import {
-  getProducts,
-  createProductWithImage,
-  updateProductWithImage,
-  deleteProduct,
-} from "../api/userApi";
-import "../styles/products.css";
+import { getProducts, createOrder } from "../api/userApi";
+import "../styles/orders.css";
 
-export default function Products() {
+export default function Orders() {
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+
+  const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [image, setImage] = useState(null);
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
 
-  const BASE_URL = "http://localhost:3001";
+  // URL backend untuk gambar
+  const BASE_URL =
+    import.meta.env.VITE_API_URL ||
+    "https://final-project-backend-production-6f07.up.railway.app";
 
   useEffect(() => {
     loadProducts();
@@ -41,109 +41,79 @@ export default function Products() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!name || !price) {
-      toast.warning("Nama dan harga wajib diisi!");
+  const addToCart = (product) => {
+    setCart((prev) => {
+      const exists = prev.find((p) => p.id === product.id);
+      if (exists) {
+        return prev.map((item) =>
+          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
+        );
+      }
+      toast.success(`${product.name} ditambahkan ke keranjang`);
+      return [...prev, { ...product, qty: 1 }];
+    });
+  };
+
+  const decreaseQty = (id) => {
+    setCart((prev) =>
+      prev
+        .map((item) => (item.id === id ? { ...item, qty: item.qty - 1 } : item))
+        .filter((item) => item.qty > 0)
+    );
+  };
+
+  const removeFromCart = (id) => {
+    setCart(cart.filter((item) => item.id !== id));
+    toast.info("Produk dihapus dari keranjang");
+  };
+
+  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  const handleCheckout = async () => {
+    if (cart.length === 0) {
+      toast.warning("Keranjang masih kosong!");
       return;
     }
 
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("price", price);
-    if (image) formData.append("image", image);
-
     try {
-      if (selectedProduct) {
-        await updateProductWithImage(selectedProduct.id, formData);
-        toast.success("Produk berhasil diperbarui!");
-      } else {
-        await createProductWithImage(formData);
-        toast.success("Produk berhasil ditambahkan!");
-      }
+      await createOrder({
+        userId: user?.id,
+        items: cart.map((item) => ({
+          productId: item.id,
+          qty: item.qty,
+          price: item.price,
+        })),
+        total,
+        status: "pending",
+      });
 
-      setModalOpen(false);
-      setSelectedProduct(null);
-      setName("");
-      setPrice("");
-      setImage(null);
-      loadProducts();
+      toast.success("Pesanan berhasil dibuat!");
+      navigate("/payment", { state: { cart, total } });
     } catch (err) {
       console.error(err);
-      toast.error("Gagal menyimpan produk!");
-    }
-  };
-
-  const handleEdit = (product) => {
-    setSelectedProduct(product);
-    setName(product.name);
-    setPrice(product.price);
-    setModalOpen(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Yakin ingin menghapus produk ini?")) return;
-    try {
-      await deleteProduct(id);
-      toast.success("Produk berhasil dihapus!");
-      loadProducts();
-    } catch (err) {
-      console.error(err);
-      toast.error("Gagal menghapus produk!");
+      toast.error("Gagal membuat pesanan!");
     }
   };
 
   return (
-    <div className="products-container">
-      {/* HEADER */}
-      <div className="products-header">
-        <h3>☕ Kelola Produk</h3>
-        <button
-          className="btn-coffee"
-          onClick={() => {
-            setModalOpen(true);
-            setSelectedProduct(null);
-            setName("");
-            setPrice("");
-            setImage(null);
-          }}
-        >
-          + Tambah Produk
-        </button>
-      </div>
+    <div className="orders-container">
+      <h3>☕ Pesan KopiKuKopi</h3>
 
-      {/* GRID PRODUK */}
-      <div className="products-grid">
+      <h5 className="mt-4">Pilih Produk:</h5>
+      <div className="product-grid">
         {products.length > 0 ? (
-          products.map((product) => (
-            <div key={product.id} className="product-card-admin">
-              {product.image ? (
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  onError={(e) => {
-                    e.target.src = `${BASE_URL}/uploads/default.jpg`;
-                  }}
-                />
-              ) : (
-                <div className="no-image">Tidak ada gambar</div>
-              )}
-              <h5>{product.name}</h5>
-              <p>Rp {Number(product.price).toLocaleString()}</p>
-              <div className="product-actions">
-                <button
-                  className="btn-edit"
-                  onClick={() => handleEdit(product)}
-                >
-                  ✏️ Edit
-                </button>
-                <button
-                  className="btn-delete"
-                  onClick={() => handleDelete(product.id)}
-                >
-                  🗑️ Hapus
-                </button>
-              </div>
+          products.map((p) => (
+            <div className="product-card" key={p.id}>
+              <img
+                src={p.image}
+                alt={p.name}
+                onError={(e) => {
+                  e.target.src = `${BASE_URL}/uploads/default.jpg`;
+                }}
+              />
+              <h5>{p.name}</h5>
+              <p>Rp {Number(p.price).toLocaleString()}</p>
+              <button onClick={() => addToCart(p)}>Tambah ke Keranjang</button>
             </div>
           ))
         ) : (
@@ -151,65 +121,56 @@ export default function Products() {
         )}
       </div>
 
-      {/* MODAL FORM */}
-      {modalOpen && (
-        <div
-          className="product-modal-overlay"
-          onClick={() => setModalOpen(false)}
-        >
-          <div
-            className="product-modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h4>
-              {selectedProduct ? "✏️ Edit Produk" : "➕ Tambah Produk Baru"}
-            </h4>
+      {/* KERANJANG */}
+      <div className="cart-section">
+        <h4>🧺 Keranjang Pesanan</h4>
 
-            <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                placeholder="Nama produk"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+        {cart.length === 0 ? (
+          <p className="text-muted mt-2">Belum ada produk di keranjang.</p>
+        ) : (
+          <>
+            <ul className="cart-list">
+              {cart.map((item) => (
+                <li className="cart-item" key={item.id}>
+                  <div className="cart-item-info">
+                    <span className="cart-name">{item.name}</span>
+                    <span className="cart-price">
+                      Rp {(item.price * item.qty).toLocaleString()}
+                    </span>
+                  </div>
 
-              <input
-                type="number"
-                placeholder="Harga produk"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-              />
+                  <div className="cart-controls">
+                    <button className="qty-btn" onClick={() => decreaseQty(item.id)}>
+                      ➖
+                    </button>
+                    <span className="qty-display">{item.qty}</span>
+                    <button className="qty-btn" onClick={() => addToCart(item)}>
+                      ➕
+                    </button>
+                    <button
+                      className="remove-btn"
+                      onClick={() => removeFromCart(item.id)}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
 
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImage(e.target.files[0])}
-              />
+            <div className="cart-total">Total: Rp {total.toLocaleString()}</div>
 
-              {image && (
-                <img
-                  src={URL.createObjectURL(image)}
-                  alt="Preview"
-                  className="preview-image"
-                />
-              )}
-
-              <div className="product-modal-actions">
-                <button type="submit" className="btn-coffee">
-                  Simpan
-                </button>
-                <button
-                  type="button"
-                  className="btn-back"
-                  onClick={() => setModalOpen(false)}
-                >
-                  Batal
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            <div className="cart-buttons">
+              <button className="btn-checkout" onClick={handleCheckout}>
+                Lanjut ke Pembayaran
+              </button>
+              <button className="btn-back" onClick={() => navigate("/home")}>
+                Kembali
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
