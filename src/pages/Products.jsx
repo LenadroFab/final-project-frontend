@@ -7,7 +7,7 @@ import {
   updateProductWithImage,
   deleteProduct,
 } from "../api/userApi";
-import "../styles/products.css"; // ✅ CSS khusus produk
+import "../styles/products.css";
 
 export default function Products() {
   const [products, setProducts] = useState([]);
@@ -17,7 +17,6 @@ export default function Products() {
   const [price, setPrice] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
 
-  // URL backend (otomatis disesuaikan)
   const BASE_URL = "http://localhost:3001";
 
   useEffect(() => {
@@ -28,7 +27,6 @@ export default function Products() {
     try {
       const res = await getProducts();
 
-      // 🔥 Pastikan image selalu lengkap URL-nya
       const formatted = res.map((p) => ({
         ...p,
         image: p.image?.startsWith("http")
@@ -124,7 +122,7 @@ export default function Products() {
                   src={product.image}
                   alt={product.name}
                   onError={(e) => {
-                    e.target.src = `${BASE_URL}/uploads/default.jpg`; // fallback jika gambar hilang
+                    e.target.src = `${BASE_URL}/uploads/default.jpg`;
                   }}
                 />
               ) : (
@@ -155,11 +153,18 @@ export default function Products() {
 
       {/* MODAL FORM */}
       {modalOpen && (
-        <div className="modal-overlay" onClick={() => setModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="product-modal-overlay"
+          onClick={() => setModalOpen(false)}
+        >
+          <div
+            className="product-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h4>
               {selectedProduct ? "✏️ Edit Produk" : "➕ Tambah Produk Baru"}
             </h4>
+
             <form onSubmit={handleSubmit}>
               <input
                 type="text"
@@ -167,12 +172,14 @@ export default function Products() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
+
               <input
                 type="number"
                 placeholder="Harga produk"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
               />
+
               <input
                 type="file"
                 accept="image/*"
@@ -187,7 +194,7 @@ export default function Products() {
                 />
               )}
 
-              <div className="modal-actions">
+              <div className="product-modal-actions">
                 <button type="submit" className="btn-coffee">
                   Simpan
                 </button>
