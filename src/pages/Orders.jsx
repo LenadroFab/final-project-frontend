@@ -1,8 +1,11 @@
+// ===============================================
+// ☕ KopiKuKopi — Orders Page
+// ===============================================
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getProducts, createOrder } from "../api/userApi";
-import "../styles/orders.css"; // ✅ Import CSS khusus halaman Orders
+import "../styles/orders.css";
 
 export default function Orders() {
   const navigate = useNavigate();
@@ -11,19 +14,19 @@ export default function Orders() {
   const [cart, setCart] = useState([]);
   const [products, setProducts] = useState([]);
 
-  // URL backend (untuk gambar)
-  const BASE_URL = "http://localhost:3001";
+  // URL backend untuk gambar
+  const BASE_URL =
+    import.meta.env.VITE_API_URL ||
+    "https://final-project-backend-production-6f07.up.railway.app";
 
   useEffect(() => {
     loadProducts();
   }, []);
 
-  // 🔥 Ambil produk dan pastikan gambar sudah lengkap URL-nya
   const loadProducts = async () => {
     try {
       const res = await getProducts();
 
-      // Pastikan URL gambar lengkap
       const formatted = res.map((p) => ({
         ...p,
         image: p.image?.startsWith("http")
@@ -38,12 +41,10 @@ export default function Orders() {
     }
   };
 
-  // ➕ Tambah ke keranjang
   const addToCart = (product) => {
     setCart((prev) => {
       const exists = prev.find((p) => p.id === product.id);
       if (exists) {
-        // Jika sudah ada, tambah qty
         return prev.map((item) =>
           item.id === product.id ? { ...item, qty: item.qty + 1 } : item
         );
@@ -53,7 +54,6 @@ export default function Orders() {
     });
   };
 
-  // ➖ Kurangi quantity
   const decreaseQty = (id) => {
     setCart((prev) =>
       prev
@@ -62,16 +62,13 @@ export default function Orders() {
     );
   };
 
-  // ❌ Hapus item
   const removeFromCart = (id) => {
     setCart(cart.filter((item) => item.id !== id));
     toast.info("Produk dihapus dari keranjang");
   };
 
-  // 💰 Hitung total
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-  // ✅ Checkout
   const handleCheckout = async () => {
     if (cart.length === 0) {
       toast.warning("Keranjang masih kosong!");
@@ -79,7 +76,7 @@ export default function Orders() {
     }
 
     try {
-      const orderData = {
+      await createOrder({
         userId: user?.id,
         items: cart.map((item) => ({
           productId: item.id,
@@ -88,9 +85,8 @@ export default function Orders() {
         })),
         total,
         status: "pending",
-      };
+      });
 
-      await createOrder(orderData);
       toast.success("Pesanan berhasil dibuat!");
       navigate("/payment", { state: { cart, total } });
     } catch (err) {
@@ -108,17 +104,13 @@ export default function Orders() {
         {products.length > 0 ? (
           products.map((p) => (
             <div className="product-card" key={p.id}>
-              {p.image ? (
-                <img
-                  src={p.image}
-                  alt={p.name}
-                  onError={(e) => {
-                    e.target.src = `${BASE_URL}/uploads/default.jpg`;
-                  }}
-                />
-              ) : (
-                <div className="no-image">Tidak ada gambar</div>
-              )}
+              <img
+                src={p.image}
+                alt={p.name}
+                onError={(e) => {
+                  e.target.src = `${BASE_URL}/uploads/default.jpg`;
+                }}
+              />
               <h5>{p.name}</h5>
               <p>Rp {Number(p.price).toLocaleString()}</p>
               <button onClick={() => addToCart(p)}>Tambah ke Keranjang</button>
@@ -129,27 +121,26 @@ export default function Orders() {
         )}
       </div>
 
-      {/* 🧺 Keranjang */}
+      {/* KERANJANG */}
       <div className="cart-section">
         <h4>🧺 Keranjang Pesanan</h4>
+
         {cart.length === 0 ? (
           <p className="text-muted mt-2">Belum ada produk di keranjang.</p>
         ) : (
           <>
             <ul className="cart-list">
-              {cart.map((item, i) => (
-                <li className="cart-item" key={i}>
+              {cart.map((item) => (
+                <li className="cart-item" key={item.id}>
                   <div className="cart-item-info">
                     <span className="cart-name">{item.name}</span>
                     <span className="cart-price">
                       Rp {(item.price * item.qty).toLocaleString()}
                     </span>
                   </div>
+
                   <div className="cart-controls">
-                    <button
-                      className="qty-btn"
-                      onClick={() => decreaseQty(item.id)}
-                    >
+                    <button className="qty-btn" onClick={() => decreaseQty(item.id)}>
                       ➖
                     </button>
                     <span className="qty-display">{item.qty}</span>
@@ -170,11 +161,7 @@ export default function Orders() {
             <div className="cart-total">Total: Rp {total.toLocaleString()}</div>
 
             <div className="cart-buttons">
-              <button
-                className="btn-checkout"
-                onClick={handleCheckout}
-                disabled={cart.length === 0}
-              >
+              <button className="btn-checkout" onClick={handleCheckout}>
                 Lanjut ke Pembayaran
               </button>
               <button className="btn-back" onClick={() => navigate("/home")}>
