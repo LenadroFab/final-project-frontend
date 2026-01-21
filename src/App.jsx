@@ -1,15 +1,20 @@
 // src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+// pages
 import Login from "./pages/Login";
-import Users from "./pages/Users";
 import Dashboard from "./pages/Dashboard";
+import Users from "./pages/Users";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
 import Payment from "./pages/Payment";
-import ProtectedRoute from "./utils/ProtectedRoute";
 import CustomerHome from "./pages/CustomerHome";
 import PaymentSuccess from "./pages/PaymentSuccess";
 
+// utils
+import ProtectedRoute from "./utils/ProtectedRoute";
+
+// ui & styles
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "@coreui/coreui/dist/css/coreui.min.css";
@@ -20,34 +25,23 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* ===== Login ===== */}
+        {/* ======================
+            PUBLIC
+        ====================== */}
         <Route path="/" element={<Login />} />
 
-        {/* ===== ADMIN / KASIR ===== */}
+        {/* ======================
+            CUSTOMER (LOGIN ONLY)
+        ====================== */}
         <Route
-          path="/dashboard"
+          path="/home"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <CustomerHome />
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/users"
-          element={
-            <ProtectedRoute>
-              <Users />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/products"
-          element={
-            <ProtectedRoute>
-              <Products />
-            </ProtectedRoute>
-          }
-        />
+
         <Route
           path="/orders"
           element={
@@ -56,6 +50,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/payment"
           element={
@@ -64,12 +59,42 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
         <Route path="/payment-success" element={<PaymentSuccess />} />
 
-        {/* ===== CUSTOMER ===== */}
-        <Route path="/home" element={<CustomerHome />} />
+        {/* ======================
+            ADMIN / KASIR
+        ====================== */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* ===== Fallback jika halaman tidak ditemukan ===== */}
+        <Route
+          path="/products"
+          element={
+            <ProtectedRoute role="admin">
+              <Products />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute role="admin">
+              <Users />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ======================
+            FALLBACK
+        ====================== */}
         <Route
           path="*"
           element={
@@ -83,14 +108,15 @@ export default function App() {
         />
       </Routes>
 
-      {/* ===== Toastify Global Notification ===== */}
+      {/* ======================
+          GLOBAL TOAST
+      ====================== */}
       <ToastContainer
         position="top-right"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop
         closeOnClick
-        rtl={false}
         pauseOnFocusLoss
         draggable
         pauseOnHover
